@@ -5,26 +5,22 @@ from playwright.sync_api import sync_playwright
 DYNAMODB_TABLE = os.environ['DYNAMODB_TABLE']
 
 def get_bitcoin_value():
+    url = "https://app.bullz.games/"
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
-        page.goto("https://app.bullz.games/")
-        page.wait_for_selector("//div[contains(@class, 'font-black')]", timeout=10000)
+        page.goto(url, wait_until="networkidle")
+        page.wait_for_selector("div.font-black", timeout=20000)
 
-        div = page.query_selector("//div[contains(@class, 'font-black')]")
+        # Now select the element
+        div = page.query_selector("div.font-black")
         if not div:
-            browser.close()
             raise ValueError("Bitcoin value div not found")
 
-        main_part = div.text_content()
-        decimal_span = div.query_selector("span")
-        decimal_part = decimal_span.text_content() if decimal_span else ""
-
-        main_only = main_part.replace(decimal_part, "").strip()
-        full_value_str = (main_only + decimal_part).replace(',', '')
+        main_part = div.text_content().strip()
+        # You might need to refine extraction depending on actual HTML here
         browser.close()
-
-        return float(full_value_str)
+        return main_part
 
 def store_value_in_dynamodb(value):
     dynamodb = boto3.resource('dynamodb')
