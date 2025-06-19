@@ -9,10 +9,9 @@ def get_bitcoin_value():
         browser = p.chromium.launch()
         page = browser.new_page()
         page.goto("https://app.bullz.games/")
-        page.wait_for_selector("div.flex.items-center.font-black.text-[24px].sm:text-[30px]", timeout=10000)
+        page.wait_for_selector("//div[contains(@class, 'font-black')]", timeout=10000)
 
-        # Select the div with the number
-        div = page.query_selector("div.flex.items-center.font-black.text-[24px].sm:text-[30px]")
+        div = page.query_selector("//div[contains(@class, 'font-black')]")
         if not div:
             browser.close()
             raise ValueError("Bitcoin value div not found")
@@ -21,10 +20,7 @@ def get_bitcoin_value():
         decimal_span = div.query_selector("span")
         decimal_part = decimal_span.text_content() if decimal_span else ""
 
-        # Remove decimal part from main_part and concat
         main_only = main_part.replace(decimal_part, "").strip()
-
-        # Compose full string and clean commas
         full_value_str = (main_only + decimal_part).replace(',', '')
         browser.close()
 
