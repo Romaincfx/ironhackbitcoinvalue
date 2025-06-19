@@ -21,21 +21,20 @@ def get_bitcoin_value():
         if frame is None:
             raise Exception("Iframe content frame not found")
 
-        # Now wait for the Bitcoin value element inside the iframe
-        # Use a simpler selector (adjust if needed)
-        frame.wait_for_selector("div.font-black", timeout=20000)
+        elements = frame.query_selector_all("div.font-black")
+        print(f"Found {len(elements)} elements with class 'font-black' inside iframe")
 
-        # Grab the element inside iframe
-        div = frame.query_selector("div.flex.items-center.font-black.text-[24px].sm:text-[30px]")
+        selector = "div.flex.items-center.font-black.text-[24px].sm:text-[30px]"
+        frame.wait_for_selector(selector, timeout=20000)
+        div = frame.query_selector(selector)
         if not div:
             raise Exception("Bitcoin value div not found inside iframe")
 
-        # Extract text parts
-        main_part = div.evaluate("el => el.childNodes[0].textContent.trim()")  # e.g. "104,795."
-        decimal_part = div.query_selector("span").text_content().strip()  # e.g. "86"
+        main_part = div.evaluate("el => el.childNodes[0].textContent.trim()")
+        decimal_part = div.query_selector("span").text_content().strip()
 
         full_value_str = main_part + decimal_part
-        full_value_str = full_value_str.replace(',', '')  # Remove commas
+        full_value_str = full_value_str.replace(',', '')
 
         browser.close()
         return float(full_value_str)
