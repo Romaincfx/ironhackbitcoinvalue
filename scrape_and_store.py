@@ -44,7 +44,7 @@ if __name__ == "__main__":
 
 
 def store_value_in_dynamodb(value):
-    dynamodb = boto3.resource('dynamodb')
+    dynamodb = boto3.resource('dynamodb', region_name='us-west-1')
     table = dynamodb.Table(DYNAMODB_TABLE)
     from datetime import datetime
     now = datetime.utcnow().isoformat()
