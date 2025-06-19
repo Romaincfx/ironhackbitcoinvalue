@@ -22,19 +22,18 @@ def get_bitcoin_value():
 
         # Wait for the target div inside the iframe
         selector = r"div.flex.items-center.font-black.text-\[24px\].sm\:text-\[30px\]"
-        frame.wait_for_selector(selector, timeout=20000)
-        div = frame.query_selector(selector)
-
-
+        frame.wait_for_selector(selector, timeout=20000, state="attached")  # wait for presence, not visibility
         div = frame.query_selector(selector)
         if not div:
             raise Exception("Bitcoin value div not found inside iframe")
 
+        # get text content anyway
         main_part = div.evaluate("el => el.childNodes[0].textContent.trim()")
         decimal_part = div.query_selector("span").text_content().strip()
 
         full_value_str = main_part + decimal_part
-        full_value_str = full_value_str.replace(',', '')  # Remove commas for float conversion
+        full_value_str = full_value_str.replace(',', '')
+        # Remove commas for float conversion
 
         browser.close()
         return float(full_value_str)
