@@ -43,23 +43,24 @@ if __name__ == "__main__":
     print("Bitcoin value:", value)
 
 from decimal import Decimal
+from datetime import datetime
 
 def store_value_in_dynamodb(value):
-    dynamodb = boto3.resource('dynamodb', region_name='us-west-1')  # ensure region set
+    dynamodb = boto3.resource('dynamodb', region_name=AWS_REGION)
     table = dynamodb.Table(DYNAMODB_TABLE)
-    from datetime import datetime
-    now = datetime.utcnow().isoformat()
 
-    # Convert float to Decimal for DynamoDB compatibility
-    decimal_value = Decimal(str(value))
+    now = datetime.utcnow().isoformat()  # string for timestamp partition key
+    price_str = str(value)  # convert price to string for sort key
 
     response = table.put_item(
         Item={
-            'timestamp': now,
-            'bitcoin_value': decimal_value
+            'timestamp': now,  # partition key (string)
+            'price': price_str,  # sort key (string)
+            # Add other attributes here if needed
         }
     )
     return response
+
 
 if __name__ == "__main__":
     try:
