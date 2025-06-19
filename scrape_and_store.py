@@ -46,7 +46,7 @@ from decimal import Decimal
 from datetime import datetime
 
 def store_value_in_dynamodb(value):
-    dynamodb = boto3.resource('dynamodb', region_name=AWS_REGION)
+    dynamodb = boto3.resource('dynamodb', region_name='us-west-1')
     table = dynamodb.Table(DYNAMODB_TABLE)
 
     now = datetime.utcnow().isoformat()  # string for timestamp partition key
