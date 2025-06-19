@@ -2,31 +2,31 @@ name: Scrape Bitcoin Value and Store in DynamoDB
 
 on:
   schedule:
-    # Runs every 5 minutes (GitHub Actions minimum frequency)
-    - cron: "*/2 * * * *"
-  workflow_dispatch:  # manual trigger option
+    - cron: "*/2 * * * *"  # every 2 minutes
 
 jobs:
-  scrape-and-store:
+  scrape_and_store:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
+    - name: Checkout repo
+      uses: actions/checkout@v3
 
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install requests beautifulsoup4 boto3
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install boto3 playwright
+        playwright install chromium
 
-      - name: Run scrape_and_store.py
-        run: python scrape_and_store.py
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+    - name: Run scraping and storing script
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION: ${{ secrets.AWS_REGION }}
+        DYNAMODB_TABLE: ${{ secrets.DYNAMODB_TABLE }}
+      run: python scrape_and_store.py
