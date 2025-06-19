@@ -42,17 +42,21 @@ if __name__ == "__main__":
     value = get_bitcoin_value()
     print("Bitcoin value:", value)
 
+from decimal import Decimal
 
 def store_value_in_dynamodb(value):
-    dynamodb = boto3.resource('dynamodb', region_name='us-west-1')
+    dynamodb = boto3.resource('dynamodb', region_name='us-east-1')  # ensure region set
     table = dynamodb.Table(DYNAMODB_TABLE)
     from datetime import datetime
     now = datetime.utcnow().isoformat()
 
+    # Convert float to Decimal for DynamoDB compatibility
+    decimal_value = Decimal(str(value))
+
     response = table.put_item(
         Item={
             'timestamp': now,
-            'bitcoin_value': value
+            'bitcoin_value': decimal_value
         }
     )
     return response
