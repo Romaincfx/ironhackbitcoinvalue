@@ -4,23 +4,46 @@ from playwright.sync_api import sync_playwright
 
 DYNAMODB_TABLE = os.environ['DYNAMODB_TABLE']
 
+from playwright.sync_api import sync_playwright
+
 def get_bitcoin_value():
-    url = "https://app.bullz.games/"
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
-        page.goto(url, wait_until="networkidle")
-        page.wait_for_selector("div.font-black", timeout=20000)
+        page.goto("https://app.bullz.games/")
 
-        # Now select the element
-        div = page.query_selector("div.font-black")
+        # Wait for iframe element to load
+        iframe_element = page.wait_for_selector("iframe#reactIframe", timeout=20000)
+
+        # Get iframe's frame object
+        frame = iframe_element.content_frame()
+
+        if frame is None:
+            raise Exception("Iframe content frame not found")
+
+        # Now wait for the Bitcoin value element inside the iframe
+        # Use a simpler selector (adjust if needed)
+        frame.wait_for_selector("div.font-black", timeout=20000)
+
+        # Grab the element inside iframe
+        div = frame.query_selector("div.flex.items-center.font-black.text-[24px].sm:text-[30px]")
         if not div:
-            raise ValueError("Bitcoin value div not found")
+            raise Exception("Bitcoin value div not found inside iframe")
 
-        main_part = div.text_content().strip()
-        # You might need to refine extraction depending on actual HTML here
+        # Extract text parts
+        main_part = div.evaluate("el => el.childNodes[0].textContent.trim()")  # e.g. "104,795."
+        decimal_part = div.query_selector("span").text_content().strip()  # e.g. "86"
+
+        full_value_str = main_part + decimal_part
+        full_value_str = full_value_str.replace(',', '')  # Remove commas
+
         browser.close()
-        return main_part
+        return float(full_value_str)
+
+if __name__ == "__main__":
+    value = get_bitcoin_value()
+    print("Bitcoin value:", value)
+
 
 def store_value_in_dynamodb(value):
     dynamodb = boto3.resource('dynamodb')
